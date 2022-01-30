@@ -24,6 +24,7 @@ watcher.connect("files_deleted", self, "on_files_deleted")
 ```
 
 4. Enjoy.
+
 ![](https://github.com/KoBeWi/Godot-Directory-Watcher/blob/master/Media/ReadmeShowcase.gif)
 
 ## Some technical info
