@@ -24,12 +24,12 @@ func _ready() -> void:
 	_remaining_steps = scan_step
 
 func add_scan_directory(directory: String):
-	if directory.begins_with("res://"):
+	if directory.begins_with("res://") or directory.begins_with("user://"):
 		directory = ProjectSettings.globalize_path(directory)
 	_directory_list[directory] = {first_scan = true, new = [], modified = [], current = {}, previous = {}}
 
 func remove_scan_directory(directory: String):
-	if directory.begins_with("res://"):
+	if directory.begins_with("res://") or directory.begins_with("user://"):
 		directory = ProjectSettings.globalize_path(directory)
 	_to_delete.append(directory)
 
