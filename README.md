@@ -37,3 +37,8 @@ watcher.scan_step = 20
 The signals are emitted at the end of a scan cycle and files are passed as absolute paths.
 
 You can deregister a directory by using `remove_scan_directory()`. This will take effect at the end of next scan cycle.
+
+___
+You can find all my addons on my [profile page](https://github.com/KoBeWi).
+
+<a href='https://ko-fi.com/W7W7AD4W4' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
