@@ -30,7 +30,7 @@ watcher.connect("files_deleted", self, "on_files_deleted")
 ## Some technical info
 
 DirectoryWatcher will periodically crawl over the files in a directory and report all file changes. Sub-directories are ignored and the scan isn't recursive. To reduce I/O operations, the scan runs every second and scans 50 files per frame inside `_process()` method. Rate of scan and files per frame are configurable with `scan_delay` and `scan_step` variables.
-```
+```GDScript
 watcher.scan_delay = 0.5
 watcher.scan_step = 20
 ```
