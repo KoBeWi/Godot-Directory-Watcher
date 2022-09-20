@@ -18,9 +18,9 @@ watcher.add_scan_directory("res://directory")
 
 3. Connect signals.
 ```GDScript
-watcher.connect("files_created", self, "on_files_created")
-watcher.connect("files_modified", self, "on_files_modified")
-watcher.connect("files_deleted", self, "on_files_deleted")
+watcher.files_created.connect(on_files_created)
+watcher.files_modified.connect(on_files_modified)
+watcher.files_deleted.connect(on_files_deleted)
 ```
 
 4. Enjoy.
@@ -36,7 +36,7 @@ watcher.scan_step = 20
 ```
 The signals are emitted at the end of a scan cycle and files are passed as absolute paths.
 
-You can deregister a directory by using `remove_scan_directory()`. This will take effect at the end of next scan cycle.
+You can deregister a directory by using `remove_scan_directory()`. This will take effect at the end of the current scan cycle. The class has built-in documentation.
 
 ___
 You can find all my addons on my [profile page](https://github.com/KoBeWi).
