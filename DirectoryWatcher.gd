@@ -3,12 +3,20 @@ class_name DirectoryWatcher
 
 ## Scans the provided directory (or directories) and informs about file changes. The scan is done periodically with configurable speed.
 
+class WatchedDirectory:
+	var first_scan := true
+	var new: PackedStringArray
+	var modified: PackedStringArray
+	var current: Dictionary#[String, int]
+	var previous: Dictionary#[String, int]
+
 var _directory := DirAccess.open(".")
 
-var _directory_list: Dictionary
+var _directory_list: Dictionary#[String, WatchedDirectory]
+var _directory_cache: Array[String]
 var _to_delete: Array
 
-var _current_directory: int
+var _current_directory_index: int
 var _current_directory_name: String
 var _remaining_steps: int
 var _current_delay: float
@@ -19,11 +27,11 @@ var scan_delay: float = 1
 var scan_step := 50
 
 ## Emitted when files are created in the scanned directories.
-signal files_created(files)
+signal files_created(files: PackedStringArray)
 ## Emitted when files are modified in the scanned directories (based on modified time).
-signal files_modified(files)
+signal files_modified(files: PackedStringArray)
 ## Emitted when files are deleted in the scanned directories.
-signal files_deleted(files)
+signal files_deleted(files: PackedStringArray)
 
 func _ready() -> void:
 	_current_delay = scan_delay
@@ -33,7 +41,8 @@ func _ready() -> void:
 ## Adds a directory that will be scanned. You can add more than 1. Only supports absolute paths and res://, user://.
 func add_scan_directory(directory: String):
 	directory = ProjectSettings.globalize_path(directory)
-	_directory_list[directory] = {first_scan = true, new = [], modified = [], current = {}, previous = {}}
+	_directory_list[directory] = WatchedDirectory.new()
+	_directory_cache.assign(_directory_list.keys())
 
 ## Removes a scanned directory. Does nothing if the directory wasn't added.
 func remove_scan_directory(directory: String):
@@ -51,21 +60,21 @@ func _process(delta: float) -> void:
 	
 	while _remaining_steps > 0:
 		if _current_directory_name.is_empty():
-			_current_directory_name = _directory_list.keys()[_current_directory]
+			_current_directory_name = _directory_cache[_current_directory_index]
 			_directory.change_dir(_current_directory_name)
 			_directory.list_dir_begin()
 		
-		var directory: Dictionary = _directory_list[_current_directory_name]
+		var directory: WatchedDirectory = _directory_list[_current_directory_name]
 		
 		var file := _directory.get_next()
 		if file.is_empty():
-			_current_directory += 1
+			_current_directory_index += 1
 			_current_directory_name = ""
 			
-			if "first_scan" in directory:
-				directory.erase("first_scan")
+			if directory.first_scan:
 				directory.new.clear()
 				directory.modified.clear()
+				directory.first_scan = false
 			else:
 				if not directory.new.is_empty():
 					files_created.emit(directory.new)
@@ -75,7 +84,7 @@ func _process(delta: float) -> void:
 					files_modified.emit(directory.modified)
 					directory.modified.clear()
 				
-				var deleted: Array
+				var deleted: PackedStringArray
 				for path in directory.previous:
 					if not path in directory.current:
 						deleted.append(_directory.get_current_dir().path_join(path))
@@ -86,14 +95,12 @@ func _process(delta: float) -> void:
 			directory.previous = directory.current
 			directory.current = {}
 			
-			if _current_directory == _directory_list.size():
+			if _current_directory_index == _directory_list.size():
 				if not _to_delete.is_empty():
 					for dir in _to_delete:
 						_directory_list.erase(dir)
 				
-				_current_directory = 0
-				_remaining_steps = scan_step
-				_current_delay = scan_delay
+				_current_directory_index = 0
 				break
 		else:
 			if _directory.current_is_dir():
@@ -105,3 +112,8 @@ func _process(delta: float) -> void:
 				directory.new.append(full_file)
 			elif directory.current[file] > directory.previous[file]:
 				directory.modified.append(full_file)
+			
+			_remaining_steps -= 1
+	
+	_remaining_steps = scan_step
+	_current_delay = scan_delay
