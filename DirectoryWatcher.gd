@@ -7,14 +7,14 @@ class WatchedDirectory:
 	var first_scan := true
 	var new: PackedStringArray
 	var modified: PackedStringArray
-	var current: Dictionary#[String, int]
-	var previous: Dictionary#[String, int]
+	var current: Dictionary[String, int]
+	var previous: Dictionary[String, int]
 
 var _directory := DirAccess.open(".")
 
-var _directory_list: Dictionary#[String, WatchedDirectory]
-var _directory_cache: Array[String]
-var _to_delete: Array
+var _directory_list: Dictionary[String, WatchedDirectory]
+var _directory_cache: PackedStringArray
+var _to_delete: PackedStringArray
 
 var _current_directory_index: int
 var _current_directory_name: String
@@ -42,7 +42,7 @@ func _ready() -> void:
 func add_scan_directory(directory: String):
 	directory = ProjectSettings.globalize_path(directory)
 	_directory_list[directory] = WatchedDirectory.new()
-	_directory_cache.assign(_directory_list.keys())
+	_directory_cache = _directory_list.keys()
 
 ## Removes a scanned directory. Does nothing if the directory wasn't added.
 func remove_scan_directory(directory: String):
@@ -64,12 +64,13 @@ func _process(delta: float) -> void:
 			_directory.change_dir(_current_directory_name)
 			_directory.list_dir_begin()
 		
-		var directory: WatchedDirectory = _directory_list[_current_directory_name]
+		var directory := _directory_list[_current_directory_name]
 		
 		var file := _directory.get_next()
 		if file.is_empty():
 			_current_directory_index += 1
 			_current_directory_name = ""
+			_directory.list_dir_end()
 			
 			if directory.first_scan:
 				directory.new.clear()
@@ -99,6 +100,7 @@ func _process(delta: float) -> void:
 				if not _to_delete.is_empty():
 					for dir in _to_delete:
 						_directory_list.erase(dir)
+					_to_delete.clear()
 				
 				_current_directory_index = 0
 				break
@@ -107,10 +109,13 @@ func _process(delta: float) -> void:
 				continue
 			var full_file := _directory.get_current_dir().path_join(file)
 			
-			directory.current[file] = FileAccess.get_modified_time(full_file)
-			if directory.previous.get(file, -1) == -1:
+			var current_modtime := FileAccess.get_modified_time(full_file)
+			directory.current[file] = current_modtime
+			
+			var old_modtime: int = directory.previous.get(file, -1)
+			if old_modtime == -1:
 				directory.new.append(full_file)
-			elif directory.current[file] > directory.previous[file]:
+			elif current_modtime > old_modtime:
 				directory.modified.append(full_file)
 			
 			_remaining_steps -= 1
