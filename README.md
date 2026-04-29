@@ -27,6 +27,16 @@ watcher.files_deleted.connect(on_files_deleted)
 
 ![](https://github.com/KoBeWi/Godot-Directory-Watcher/blob/master/Media/ReadmeShowcase.gif)
 
+## Editor usage
+
+DirectoryWatcher is a Node, so it can be set up from the editor too. Just add it to the scene and inspect.
+
+![](Media/ReadmeInspector.webp)
+
+![](Media/ReadmeSignals.webp)
+
+Note that the list of directories set from the inspector can't be modified after the watcher node is ready. Also it does not allow to assign paths from outside the project.
+
 ## Some technical info
 
 DirectoryWatcher will periodically crawl over the files in a directory and report all file changes. Sub-directories are ignored and the scan isn't recursive. To reduce I/O operations, the scan runs every second and scans 50 files per frame inside `_process()` method. Rate of scan and files per frame are configurable with `scan_delay` and `scan_step` variables.
@@ -36,7 +46,9 @@ watcher.scan_step = 20
 ```
 The signals are emitted at the end of a scan cycle and files are passed as absolute paths.
 
-You can deregister a directory by using `remove_scan_directory()`. This will take effect at the end of the current scan cycle. The class has built-in documentation.
+You can deregister a directory by using `remove_scan_directory()`. This will take effect at the end of the current scan cycle.
+
+The class has built-in documentation.
 
 ___
 You can find all my addons on my [profile page](https://github.com/KoBeWi).
