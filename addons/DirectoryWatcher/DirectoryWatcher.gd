@@ -1,5 +1,7 @@
-## Scans the provided directory (or directories) and informs about file changes. The scan is done periodically with configurable speed.
+@icon("uid://dqxkyrgpvs0q3")
 class_name DirectoryWatcher extends Node
+
+## Scans the provided directory (or directories) and informs about file changes. The scan is done periodically with configurable speed.
 
 ## Delay between directory scans (in seconds).
 @export var scan_delay := 1.0
